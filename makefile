@@ -1,25 +1,33 @@
 CC=g++
 LD=g++
 
-CFLAGS=-Wall `perl -MExtUtils::Embed -e ccopts -e ccopts`
-LFLAGS=`perl -MExtUtils::Embed -e ccopts -e ldopts`
+LIB=./lib
+BIN=./bin
+ETC=./etc
+
+CFLAGS=-Wall -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ccopts`
+LFLAGS=-I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ldopts`
 
 INCLUDES=-lncurses
 
-OBJS=interface.o\
+
+OBJNAMES=interface.o\
      main.o\
      wrapper.o\
      editor.o\
      buffer.o
 
-EXEC=TextEditor
+OBJS=$(addprefix $(ETC)/, $(OBJNAMES))
 
+EXEC=$(ETC)/TextEditor
 
-%.o : %.cpp
+$(ETC)/%.o : $(BIN)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build: $(OBJS)
-	$(LD) $(LFLAGS) -o TextEditor $^ $(INCLUDES) 
+	$(LD) $(LFLAGS) -o $(ETC)/TextEditor $^ $(INCLUDES) 
+	echo "./$(EXEC)" > TextEditor
+	chmod +x TextEditor
 
 clean:
 	rm -rf $(EXEC) $(OBJS) 
