@@ -20,12 +20,14 @@ class Editor {
 		int x, y;
 		char mode;
 		string msg;
+		vector<string> helpText;
 
 		Buffer *buffer;
 		Interface *interface;
 		Wrapper *wrapper;
 		string status, filename;
-		string numToStr(int);
+
+		void setupHelp();
 
 		void up();
 		void down();
@@ -46,7 +48,6 @@ class Editor {
 		void autocomplete(string);
 		void capitalize();
 		string textCount();
-		bool findReplace();
 		vector<int> convertIdxToRowCol(int, const string&);
 		string getBufferTxt();
 
@@ -57,7 +58,11 @@ class Editor {
 
 		size_t rowColToIdx();
 
-		string findreplace_output;
+		string z_mode_output;
+
+		bool saveCommand();
+		bool quitCommand();
+		bool findReplace();
 
 
 	public:
@@ -67,6 +72,7 @@ class Editor {
 		~Editor();
 
 		char getMode();
+		string numToStr(int);
 
 		void input(int); // handle input
 		const vector<string>& getBuffer(); // return buffer to print

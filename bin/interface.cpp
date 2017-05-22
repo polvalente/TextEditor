@@ -142,7 +142,7 @@ void Interface::matchCharacters(){
 		msg = editor->getMsg();
 	}
 	else{
-		msg = "- DESBALANCEADO - COLUNA: "+std::to_string(idx[1])+" LINHA: "+std::to_string(idx[0]);
+		msg = "- DESBALANCEADO - COLUNA: "+editor->numToStr(idx[1])+" LINHA: "+editor->numToStr(idx[0]);
 	}
 	editor->setStatus(msg);
 }

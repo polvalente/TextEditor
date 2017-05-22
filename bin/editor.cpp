@@ -22,6 +22,20 @@ Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
 
 	buffer = new Buffer();
 	buffer->appendLine("");
+
+	setupHelp();	
+}
+
+void Editor::setupHelp(){
+	string helpFilename="./lib/help.txt";
+	std::ifstream arquivo(helpFilename);
+	if(arquivo.is_open()){
+		while(!arquivo.eof()){
+			string line;
+			getline(arquivo, line);
+			helpText.push_back(line);
+		}
+	}
 }
 
 Editor::Editor(Interface *i, Wrapper *w, string f) : interface(i), wrapper(w), filename(f) {
@@ -29,6 +43,8 @@ Editor::Editor(Interface *i, Wrapper *w, string f) : interface(i), wrapper(w), f
 	y = 0;
 	mode = 'n';
 	status = "Modo normal";
+
+	setupHelp();
 
 	buffer = new Buffer();
 
@@ -62,7 +78,7 @@ void Editor::updateStatus(){
 			status = "Saindo";
 			break;
 		case 'z':
-			status = findreplace_output;
+			status = z_mode_output;
 			msg = "";
 			break;
 		case ':':
@@ -73,16 +89,22 @@ void Editor::updateStatus(){
 		case 'd':
 			status = "Modo de Remocao";
 			break;
+		case 'h':
+			status = "Ajuda";
+			break;
 		default:
 			break;
 	}
-	if (mode != ':' && mode != 'z'){
+	if (mode != ':' && mode != 'z' && mode != 'h'){
 		status += "\tCOLUNA: " + numToStr(x) + "\tLINHA: " + numToStr(y) + " " + msg + " - " + textCount();
 	}
 }
 
 string Editor::numToStr(int num){
-	return std::to_string(num);
+	std::ostringstream ss;
+	ss.clear();
+	ss << num;
+	return ss.str();
 }
 
 Editor::~Editor(){
@@ -136,6 +158,9 @@ void Editor::input(int ch){
 				mode = ':';
 				commandBuffer = "";
 				break;
+			case 'h':
+				mode = 'h';
+				break;
 			case 'c':
 			case 'C':
 				capitalize();
@@ -146,6 +171,17 @@ void Editor::input(int ch){
 			default:
 				break;
 			}
+	}
+	else if (mode == 'h'){
+		switch(ch){
+			case 'q':
+			case 'Q':
+			case MY_KEY_ESC:
+				mode = 'n';
+				break;
+			default:
+				break;
+		}
 	}
 	else if (mode == 'd'){
 		switch(ch){
@@ -242,7 +278,7 @@ void Editor::input(int ch){
 	}
 	else if (mode == 'z'){
 		//modo auxiliar para mostrar resultado do findReplace
-		setStatus(findreplace_output);
+		setStatus(z_mode_output);
 		switch(ch){
 			case KEY_ENTER:
 			case '\n':
@@ -302,6 +338,14 @@ void Editor::input(int ch){
 					commandBuffer = "";
 					bufferIndex = 0;
 				}
+				else if (saveCommand()){
+					mode = 'n';
+					commandBuffer = "";
+					bufferIndex = 0;
+				}
+				else if (quitCommand()){
+					mode = 'x';
+				}
 				return;
 				break;
 
@@ -359,6 +403,8 @@ void Editor::down(){
 }
 
 const vector<string>& Editor::getBuffer(){
+	if (mode == 'h')
+		return helpText;
 	return buffer->lines;
 }
 
@@ -544,19 +590,19 @@ bool Editor::findReplace(){
 		}
 		
 		if (findResult.size() < 1 || findResult[0] == -1){
-			findreplace_output = word+" nao encontrada";
+			z_mode_output = word+" nao encontrada";
 			return true;
 		}
-		findreplace_output = word+" encontrada em (LINHA, COLUNA): ";
+		z_mode_output = word+" encontrada em (LINHA, COLUNA): ";
 		vector<int> coord;
 		size_t i;
 		for (i = 0; i < findResult.size(); i++){
 			coord = convertIdxToRowCol(findResult[i], txt);	
-			findreplace_output += "("+numToStr(coord[0])+", "+numToStr(coord[1])+"), ";
+			z_mode_output += "("+numToStr(coord[0])+", "+numToStr(coord[1])+"), ";
 		}
 		if(i > 0){
-			findreplace_output.pop_back();
-			findreplace_output.pop_back();
+			z_mode_output.pop_back();
+			z_mode_output.pop_back();
 		}
 		
 		return true;
@@ -637,4 +683,49 @@ string Editor::textCount(){
   result = wrapper->textCount(getBufferTxt());
 	ss << "chrs: " << result[0] << " words: " << result[1] << " nwspc chrs: " << result[2] << " lines: " << result[3];
 	return ss.str();
+}
+
+bool Editor::saveCommand(){
+	vector<string> comando = split(commandBuffer, ' ');
+	if (comando.size() > 2 || comando.size() < 1|| comando[0] != "w"){
+		return false;
+	}
+	else if (comando.size() == 1) {
+		comando.push_back(filename);
+	}
+
+	string old_filename = filename;
+	filename = comando[1];
+	save();
+	filename = old_filename;
+
+	return true;
+}
+
+bool Editor::quitCommand(){
+	string char0 = "";
+	string char1 = "";
+
+	if (commandBuffer.length() < 1){
+		return false;
+	}
+	else if (commandBuffer.length() == 2){
+		char1 = commandBuffer[1];		
+	}
+	else if (commandBuffer.length() > 2){
+		return false;
+	}
+
+	char0 = commandBuffer[0];
+
+	if (char0 == "q" && commandBuffer.length() == 1){
+		//quit without save
+		return true;
+	}
+	else if (char0 == "x" || (char0 == "w" && char1 == "q")){
+		//save and quit
+		save();
+		return true;
+	}
+	return false;
 }

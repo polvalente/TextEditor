@@ -5,8 +5,8 @@ LIB=./lib
 BIN=./bin
 ETC=./etc
 
-CFLAGS=-Wall -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ccopts`
-LFLAGS=-I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ldopts`
+CFLAGS=-std=c++03 -Wall -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ccopts`
+LFLAGS=-std=c++03 -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ldopts`
 
 INCLUDES=-lncurses
 
@@ -19,15 +19,13 @@ OBJNAMES=interface.o\
 
 OBJS=$(addprefix $(ETC)/, $(OBJNAMES))
 
-EXEC=$(ETC)/TextEditor
+EXEC=TextEditor
 
 $(ETC)/%.o : $(BIN)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build: $(OBJS)
-	$(LD) $(LFLAGS) -o $(ETC)/TextEditor $^ $(INCLUDES) 
-	echo "./$(EXEC)" > TextEditor
-	chmod +x TextEditor
+	$(LD) $(LFLAGS) -o $(EXEC) $^ $(INCLUDES) 
 
 clean:
 	rm -rf $(EXEC) $(OBJS) 

@@ -1,0 +1,28 @@
+SECAO DE AJUDA
+
+Este editor foi escrito por Paulo Oliveira Lenzi Valente - 2017
+
+Parte da estrutura da interface grafica foi inspirada no tutorial em http://cheukyin699.github.io/tutorial/c++/2015/02/01/ncurses-editor-tutorial-01.html
+
+Funcionalidades:
+O editor, como o Vim, possui um modo 'normal' para insercao de comandos, e outros modos que executam suas funcionalidades.
+A todo instante, o editor verifica balanceamento de caracteres (), [] e {}.
+
+O programa aceita um nome de arquivo como unico argumento de linha de comando
+
+Comandos:
+x - Sair (nao salva alteracoes no arquivo)
+d - Modo de remocao de linhas, basta apertar d novamente para remover uma dada linha
+i - Modo de insercao de texto
+w - Salvar alteracoes no arquivo
+: - Modo de insercao de comandos, atualmente contem:
+	-> /word                    : find next
+	-> /word/g                  : find all
+	-> /old/new                 : replace next
+	-> /old/new/g               : replace all
+        -> w [filename]             : salvar arquivo, se nao for fornecido o nome, salva o arquivo atual
+        -> q                        : sair
+        -> wq                       : salvar e sair
+        -> x                        : salvar e sair
+h - Ajuda
+c - Autocapitalizar frases
