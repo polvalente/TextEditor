@@ -35,6 +35,7 @@ void Editor::setupHelp(){
 			getline(arquivo, line);
 			helpText.push_back(line);
 		}
+		arquivo.close();
 	}
 }
 
@@ -58,6 +59,7 @@ Editor::Editor(Interface *i, Wrapper *w, string f) : interface(i), wrapper(w), f
 			buffer->appendLine(line);
 		}
 		msg = "Arquivo aberto: "+filename;
+		arquivo.close();
 	}
 	else {
 		//std::cerr << "Erro ao abrir arquivo: '" << filename << "'\n";
@@ -148,6 +150,17 @@ void Editor::input(int ch){
 			case 'd':
 				mode = 'd';
 				break;
+			case 'o':
+				mode = 'i';
+				buffer->insertLine("",y+1); 
+				y++;
+				x = 0;
+				break;
+			case 'O':
+				mode = 'i';
+				buffer->insertLine("",y);
+				x = 0;
+				break;
 			case 'i':
 				mode = 'i';
 				break;
@@ -187,29 +200,15 @@ void Editor::input(int ch){
 		switch(ch){
 			case 'd':
 				buffer->removeLine(y--);
-				if (y < 0){
+				if (buffer->lines.size() < 1){
 					buffer->appendLine("");
 					y = 0;
 				}
 				x = 0;
 				mode = 'n';
 				break;
-			case MY_KEY_ESC:
-				mode = 'n';		
-				break;
-			case KEY_UP:
-				up();
-				break;
-			case KEY_DOWN:
-				down();
-				break;
-			case KEY_LEFT:
-				left();
-				break;
-			case KEY_RIGHT:
-				right();
-				break;
 			default:
+				mode = 'n';
 				break;
 		}
 	}
@@ -305,13 +304,6 @@ void Editor::input(int ch){
 		
 	}
 	else if (mode == ':'){
-	/*modo de comando*
-	 *
-	 *    find next:  /palavra
-	 *     find all:  /palavra/g
-	 * replace next: s/old/new
-	 *  replace all: s/old/new/g
-	 */
 		switch(ch){
 			case KEY_LEFT:
 				bufferIndex = (bufferIndex > 0) ? bufferIndex - 1 : 0;
@@ -346,6 +338,11 @@ void Editor::input(int ch){
 				else if (quitCommand()){
 					mode = 'x';
 				}
+				else if (openCommand()){
+					mode = 'n';
+					commandBuffer = "";
+					bufferIndex = 0;
+				}
 				return;
 				break;
 
@@ -355,7 +352,6 @@ void Editor::input(int ch){
 				bufferIndex = 0;
 				return;
 				break;
-
 			default:
 				if (bufferIndex > commandBuffer.length())
 					bufferIndex = commandBuffer.length();
@@ -568,14 +564,20 @@ bool Editor::findReplace(){
 	string token;
 	vector<string> comando = split(commandBuffer, '/');
 	
-	if(comando.size() < 2 || comando.size() > 4 || (comando[0] != "" && comando[0] != "s")){
+	if(comando.size() < 2 || comando.size() > 4 || (comando[0] != "" && comando[0] != "s" && comando[0] != "ss")){
 		return false;
 	}
 
 	if (comando[comando.size()-1] == "g")
 		all = true;
 
-	string txt = getBufferTxt();
+	string txt; 
+	if (comando[0] == "s"){
+		txt = buffer->lines[y];
+	}
+	else {
+		txt = getBufferTxt();	
+	}
 	string &word = comando[1];
 	vector<int> findResult;
 	if (comando[0] == ""){
@@ -607,7 +609,7 @@ bool Editor::findReplace(){
 		
 		return true;
 	}
-	else if (comando[0] == "s"){
+	else if (comando[0] == "s" || comando[0] == "ss"){
 		//replace
 		string &new_word = comando[2];
 		if (comando.size() == 3 && comando[2] == "g"){
@@ -625,11 +627,17 @@ bool Editor::findReplace(){
 			tmp = wrapper->replace(txt, word, new_word, count, rowColToIdx());
 		}
 		vector<string> replaceResult = split(tmp);
-		buffer->deleteContent();
-		for (size_t i = 0; i < replaceResult.size(); i++){
-		//for (size_t i = 0; i < comando.size(); i++){
-			//buffer->appendLine(comando[i]);
-			buffer->appendLine(replaceResult[i]);
+		if (comando[0] == "ss"){
+			buffer->deleteContent();
+			for (size_t i = 0; i < replaceResult.size(); i++){
+			//for (size_t i = 0; i < comando.size(); i++){
+				//buffer->appendLine(comando[i]);
+				buffer->appendLine(replaceResult[i]);
+			}
+		}
+		else {
+			buffer->removeLine(y);
+			buffer->insertLine(replaceResult[0], y);
 		}
 		return true;
 	}
@@ -728,4 +736,41 @@ bool Editor::quitCommand(){
 		return true;
 	}
 	return false;
+}
+
+bool Editor::openCommand(){
+	vector<string> comando = split(commandBuffer, ' ');
+	if (comando[0] != "e" || comando.size() != 2)
+		return false;
+	
+	string fname = comando[1];
+
+	std::ifstream arquivo(fname);
+	bool opened = false;
+	if((opened = arquivo.is_open())){
+		x = 0;
+		y = 0;
+		opened = true;
+		buffer->deleteContent();
+
+		while(!arquivo.eof()){
+			string line;
+			getline(arquivo, line);
+			buffer->appendLine(line);
+		}
+
+		filename = fname;
+		msg = "Arquivo aberto: "+filename;
+		arquivo.close();
+	}
+	else {
+		x = 0;
+		y = 0;
+		filename = fname;
+		buffer->deleteContent();
+		buffer->appendLine("");
+		msg = "Novo arquivo aberto: "+filename;
+	}
+
+	return true;
 }

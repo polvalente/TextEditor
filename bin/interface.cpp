@@ -61,7 +61,7 @@ void Interface::printBuffer(vector<string> &lines){
 			move(i, 0);
 		}
 		else{
-			mvprintw(i, 0, lines[i].c_str());
+			mvprintw(i, 0, "%s", lines[i].c_str()); // "%s" para escapar chars como %
 		}
 		clrtoeol();
 	}
@@ -69,7 +69,7 @@ void Interface::printBuffer(vector<string> &lines){
 
 void Interface::printStatus(string &status){
 	attron(A_REVERSE);
-	mvprintw(LINES-1, 0, status.c_str());
+	mvprintw(LINES-1, 0, "%s", status.c_str()); // %s para escapar chars como %
 	clrtoeol();
 	attroff(A_REVERSE);
 }

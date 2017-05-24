@@ -63,6 +63,7 @@ class Editor {
 		bool saveCommand();
 		bool quitCommand();
 		bool findReplace();
+		bool openCommand();
 
 
 	public:

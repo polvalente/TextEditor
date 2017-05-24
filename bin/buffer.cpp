@@ -25,7 +25,8 @@ void Buffer::appendLine(string line){
 }
 
 void Buffer::removeLine(int i){
-	lines.erase(lines.begin()+i);
+	if (i >= 0)
+		lines.erase(lines.begin()+i);
 }
 
 void Buffer::deleteContent(){

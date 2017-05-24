@@ -16,13 +16,15 @@ d - Modo de remocao de linhas, basta apertar d novamente para remover uma dada l
 i - Modo de insercao de texto
 w - Salvar alteracoes no arquivo
 : - Modo de insercao de comandos, atualmente contem:
-	-> /word                    : find next
-	-> /word/g                  : find all
-	-> /old/new                 : replace next
-	-> /old/new/g               : replace all
-        -> w [filename]             : salvar arquivo, se nao for fornecido o nome, salva o arquivo atual
-        -> q                        : sair
-        -> wq                       : salvar e sair
-        -> x                        : salvar e sair
+	-> /word                     : encontrar proximo
+	-> /word/g                   : encontrar todos
+	-> s/old/new                 : substituir proximo na linha
+	-> s/old/new/g               : substituir todos na linha
+	-> ss/old/new								 : substituir proximo
+	-> ss/old/new/g							 : substituir todos
+  -> w [filename]             : salvar arquivo, se nao for fornecido o nome, salva o arquivo atual
+  -> q                        : sair
+  -> wq                       : salvar e sair
+  -> x                        : salvar e sair
 h - Ajuda
 c - Autocapitalizar frases
