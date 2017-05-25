@@ -1,13 +1,18 @@
 # TextEditor
-Vim-like text editor made with ncurses
-
-## Install:
-- Clone dir to local machine and run the command 'make' (or 'make all')
-- Run the executable TextEditor; press h for help
 
 ## Este editor foi escrito por Paulo Valente
 
-## Instalação:
+## Instruções
+
+### Dependencias 
+- Bibliotecas
+    - libncurses5-dev
+    - libncurses-dev
+    - libperl-dev
+- Módulos do Perl
+    - IO::Null
+
+### Instalação
 - Clonar o diretório para a máquina local e executar o comando 'make' (ou 'make all')
 - Executar o arquivo TextEditor; pressione h para ajuda
 

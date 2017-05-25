@@ -217,7 +217,10 @@ void Editor::input(int ch){
 	else if (mode == 'd'){
 		switch(ch){
 			case 'd':
-				buffer->removeLine(y--);
+				buffer->removeLine(y);
+				if (y > 0){
+					y--;
+				}
 				if (buffer->lines->size() < 1){
 					buffer->appendLine("");
 					y = 0;
