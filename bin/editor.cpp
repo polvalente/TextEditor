@@ -116,7 +116,7 @@ void Editor::updateStatus(){
 			break;
 	}
 	if (mode != ':' && mode != 'z' && mode != 'h'){
-		status += "\tCOLUNA: " + numToStr(x) + "\tLINHA: " + numToStr(y) + " " + msg + " - " + textCount();
+		status += "\tCOLUNA: " + numToStr(x) + "\tLINHA: " + numToStr(y) + " - " +  textCount() + " " + msg;
 	}
 }
 
@@ -512,6 +512,10 @@ void Editor::setStatus(string msg){
 vector<int> Editor::matchCharacters(){
 	vector<int> coords;
 	string txt = getBufferTxt();
+	if(txt.length() < 1){
+		coords = vector<int>(2,-1);
+		return coords;
+	}
 	int idx;
 	char list[] = "([{";
 	for (int i = 0; i < 3; i++){
@@ -521,8 +525,7 @@ vector<int> Editor::matchCharacters(){
 	}
 
 	if (idx == -1){
-		coords.push_back(-1);
-		coords.push_back(-1);
+		coords = vector<int>(2,-1);
 		return coords;
 	}
 	
@@ -796,3 +799,7 @@ bool Editor::openCommand(){
 
 	return true;
 }
+
+bool Editor::bufferEmpty(){
+	return (buffer->lines->size() == 1 && buffer->lines->at(0) == "");
+}	

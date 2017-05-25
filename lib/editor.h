@@ -85,6 +85,8 @@ class Editor {
 
 		int getX();
 		int getY();
+
+		bool bufferEmpty();
 };
 
 #endif

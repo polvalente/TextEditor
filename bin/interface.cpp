@@ -44,7 +44,9 @@ int Interface::mainLoop(){
 
 		editor->input(ch);
 
-		//matchCharacters();
+		if(!(editor->bufferEmpty())){
+			matchCharacters();
+		}
 
 		refresh();
 		if (editor->getMode() == 'x'){
@@ -127,16 +129,6 @@ void Interface::autocomplete(vector<string> wordList, string word){
 
 void Interface::matchCharacters(){
 	vector<int> idx = editor->matchCharacters(); // returns row, col
-	/*if (idx[0] == -1){
-		return;
-	}
-	attron(A_REVERSE);
-	char s[] = " ";
-	char c = editor->getBuffer()[idx[0]][idx[1]];
-	s[0] = c;
-	mvprintw(idx[0], idx[1], s); 
-	attroff(A_REVERSE);
-	refresh();*/
 	string msg;
 	if (idx[0] == -1){
 		msg = editor->getMsg();
