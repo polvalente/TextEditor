@@ -23,6 +23,7 @@ void Interface::init(){
 	initscr();
 	noecho();
 	cbreak();
+	curs_set(1);
 	keypad(stdscr, true);
 }
 
