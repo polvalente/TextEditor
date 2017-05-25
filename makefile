@@ -5,13 +5,13 @@ RELEXE=TextEditor
 DBGEXE=TextEditor-debug-build
 
 LIB=./lib
-BIN=./bin
+SRC=./src
 #ETC=./etc
 RELDIR=./release
 DBGDIR=./debug
 
 DIRLIST=$(LIB)\
-	$(BIN)\
+	$(SRC)\
 	$(RELDIR)\
 	$(DBGDIR)
 
@@ -35,10 +35,10 @@ DBGOBJS=$(addprefix $(DBGDIR)/, $(OBJS))
 .PHONY: all debug prep remake clean release
 
 #.o rules
-$(RELDIR)/%.o : $(BIN)/%.cpp
+$(RELDIR)/%.o : $(SRC)/%.cpp
 	$(CC) $(CFLAGS) $(RELCFLAGS) -c $< -o $@
 
-$(DBGDIR)/%.o : $(BIN)/%.cpp
+$(DBGDIR)/%.o : $(SRC)/%.cpp
 	$(CC) $(CFLAGS) $(DBGCFLAGS) -c $< -o $@
 
 
