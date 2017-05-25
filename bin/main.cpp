@@ -13,7 +13,7 @@ using std::vector;
 using std::cout;
 using std::endl;
 
-static void xs_init(pTHX);
+//static void xs_init(pTHX);
 
 EXTERN_C void boot_DynaLoader(pTHX_ CV *cv);
 

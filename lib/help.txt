@@ -10,6 +10,9 @@ A todo instante, o editor verifica balanceamento de caracteres (), [] e {}.
 
 O programa aceita um nome de arquivo como unico argumento de linha de comando
 
+Dependencias:
+O programa foi feito com a versao 5.18 do Perl para a interface de processamento de texto
+
 Comandos:
 x - Sair (nao salva alteracoes no arquivo)
 d - Modo de remocao de linhas, basta apertar d novamente para remover uma dada linha

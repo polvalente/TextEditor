@@ -44,7 +44,7 @@ int Interface::mainLoop(){
 
 		editor->input(ch);
 
-		matchCharacters();
+		//matchCharacters();
 
 		refresh();
 		if (editor->getMode() == 'x'){
@@ -57,7 +57,7 @@ int Interface::mainLoop(){
 
 void Interface::printBuffer(vector<string> &lines){
 	for(int i = 0; i < LINES-1; i++){
-		if (i >= lines.size()){
+		if (i >= (int)lines.size()){
 			move(i, 0);
 		}
 		else{
@@ -84,7 +84,7 @@ void Interface::moveTo(int x, int y){
 
 void Interface::autocomplete(vector<string> wordList, string word){
 	bool exit = false;
-	int i = 0;
+	unsigned i = 0;
 	string prev_msg = editor->getMsg();
 	refresh();
 	while(!exit){
@@ -107,7 +107,7 @@ void Interface::autocomplete(vector<string> wordList, string word){
 			case 9:
 			case KEY_ENTER:
 			case '\n':
-				for(int j = word.length(); j < wordList[i].length(); j++)
+				for(unsigned j = word.length(); j < wordList[i].length(); j++)
 					editor->input(wordList[i][j]);
 				exit = true;
 				break;

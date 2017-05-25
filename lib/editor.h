@@ -21,11 +21,14 @@ class Editor {
 		char mode;
 		string msg;
 		vector<string> helpText;
+		string status, filename;
+		string commandBuffer;
+		size_t bufferIndex;
+		string z_mode_output;
 
 		Buffer *buffer;
 		Interface *interface;
 		Wrapper *wrapper;
-		string status, filename;
 
 		void setupHelp();
 
@@ -41,8 +44,6 @@ class Editor {
 		void save(); // save buffer to file
 		bool isWordCharacter(char);
 		string getWordBeforeCursor();
-		string commandBuffer;
-		size_t bufferIndex;
 
 		//funcoes com interface para o Perl
 		void autocomplete(string);
@@ -58,7 +59,6 @@ class Editor {
 
 		size_t rowColToIdx();
 
-		string z_mode_output;
 
 		bool saveCommand();
 		bool quitCommand();

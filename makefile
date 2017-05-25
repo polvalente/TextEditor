@@ -5,6 +5,8 @@ LIB=./lib
 BIN=./bin
 ETC=./etc
 
+DEBUG=-g
+
 CFLAGS=-std=c++03 -Wall -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ccopts`
 LFLAGS=-std=c++03 -I$(LIB) `perl -MExtUtils::Embed -e ccopts -e ldopts`
 
@@ -25,7 +27,7 @@ $(ETC)/%.o : $(BIN)/%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 build: $(OBJS)
-	$(LD) $(LFLAGS) -o $(EXEC) $^ $(INCLUDES) 
+	$(LD) -o $(EXEC) $^ $(INCLUDES) $(LFLAGS)
 
 clean:
 	rm -rf $(EXEC) $(OBJS) 

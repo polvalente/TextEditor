@@ -10,8 +10,9 @@ using std::string;
 class Buffer {
 	public:
 		Buffer();
+		~Buffer();
 
-		vector<string> lines;
+		vector<string> *lines;
 
 		void insertLine(string, int);
 		void removeLine(int);

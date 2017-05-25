@@ -19,6 +19,9 @@ Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
 	mode = 'n';
 	status = "Modo Normal";
 	filename = "untitled";
+	commandBuffer = "";
+	bufferIndex = 0;
+	z_mode_output = "";
 
 	buffer = new Buffer();
 	buffer->appendLine("");
@@ -28,7 +31,7 @@ Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
 
 void Editor::setupHelp(){
 	string helpFilename="./lib/help.txt";
-	std::ifstream arquivo(helpFilename);
+	std::ifstream arquivo(helpFilename.c_str());
 	if(arquivo.is_open()){
 		while(!arquivo.eof()){
 			string line;
@@ -39,11 +42,26 @@ void Editor::setupHelp(){
 	}
 }
 
-Editor::Editor(Interface *i, Wrapper *w, string f) : interface(i), wrapper(w), filename(f) {
-	x = 0;
-	y = 0;
-	mode = 'n';
-	status = "Modo normal";
+Editor::Editor(Interface *i, Wrapper *w, string f) : 
+	x(0),
+	y(0),
+	mode('n'),
+	status("Modo normal"),
+	filename(f),
+	commandBuffer(""),
+	bufferIndex(0),
+	z_mode_output(""),
+	interface(i),
+	wrapper(w)
+{
+	
+	//x = 0;
+	//y = 0;
+	//mode = 'n';
+	//status = "Modo normal";
+	//commandBuffer = "";
+	//bufferIndex = 0;
+	//z_mode_output = "";
 
 	setupHelp();
 
@@ -114,12 +132,12 @@ Editor::~Editor(){
 }
 
 void Editor::del_key(){
-	if (x == buffer->lines[y].length() && y != buffer->lines.size() - 1){
-		buffer->lines[y] += buffer->lines[y+1];
+	if (x == (int)buffer->lines->at(y).length() && y != (int)buffer->lines->size() - 1){
+		buffer->lines->at(y) += buffer->lines->at(y+1);
 		deleteLine(y+1);
 	}
 	else{
-		buffer->lines[y].erase(x, 1);
+		buffer->lines->at(y).erase(x, 1);
 	}
 }
 
@@ -200,7 +218,7 @@ void Editor::input(int ch){
 		switch(ch){
 			case 'd':
 				buffer->removeLine(y--);
-				if (buffer->lines.size() < 1){
+				if (buffer->lines->size() < 1){
 					buffer->appendLine("");
 					y = 0;
 				}
@@ -225,13 +243,13 @@ void Editor::input(int ch){
 				else if (x == 0 && y > 0){
 					// primeira coluna, apaga no final da linha
 					// anterior
-					x = buffer->lines[y-1].length();
-					buffer->lines[y-1] += buffer->lines[y];
+					x = buffer->lines->at(y-1).length();
+					buffer->lines->at(y-1) += buffer->lines->at(y);
 					deleteLine();
 					up();
 				}
 				else{
-					buffer->lines[y].erase(--x, 1);
+					buffer->lines->at(y).erase(--x, 1);
 				}
 				break;
 			
@@ -242,9 +260,9 @@ void Editor::input(int ch){
 			
 			case KEY_ENTER:
 			case '\n':
-				if (x < buffer->lines[y].length()){
-					buffer->insertLine(buffer->lines[y].substr(x, buffer->lines[y].length() - x), y + 1);
-					buffer->lines[y].erase(x, buffer->lines[y].length() - x);
+				if (x < (int)buffer->lines->at(y).length()){
+					buffer->insertLine(buffer->lines->at(y).substr(x, buffer->lines->at(y).length() - x), y + 1);
+					buffer->lines->at(y).erase(x, buffer->lines->at(y).length() - x);
 				}
 				else{
 					buffer->insertLine("", y+1);
@@ -260,7 +278,7 @@ void Editor::input(int ch){
 				//tab
 				word = getWordBeforeCursor();
 				if (x == 0 || word == ""){
-					buffer->lines[y].insert(x, 4, ' ');
+					buffer->lines->at(y).insert(x, 4, ' ');
 					x += 4;
 				}
 				else {
@@ -270,7 +288,7 @@ void Editor::input(int ch){
 
 			default:
 				//outros caracteres
-				buffer->lines[y].insert(x, 1, static_cast<char>(ch));
+				buffer->lines->at(y).insert(x, 1, static_cast<char>(ch));
 				x++;
 				break;
 		}
@@ -371,7 +389,7 @@ void Editor::left(){
 
 void Editor::right(){
 	msg = "";
-	if (x + 1 < COLS && x + 1 <= buffer->lines[y].length()){
+	if (x + 1 < COLS && x + 1 <= (int)buffer->lines->at(y).length()){
 		interface->moveTo(y, ++x);
 	}
 }
@@ -381,19 +399,19 @@ void Editor::up(){
 	if (y-1 >= 0){
 		y--;
 	}
-	if(x >= buffer->lines[y].length()){
-		x = buffer->lines[y].length();
+	if(x >= (int)buffer->lines->at(y).length()){
+		x = buffer->lines->at(y).length();
 	}
 	interface->moveTo(y, x);
 }
 
 void Editor::down(){
 	msg = "";
-	if(y+1 < LINES-1 && y+1 < buffer->lines.size()){
+	if(y+1 < (int)LINES-1 && y+1 < (int) buffer->lines->size()){
 		y++;
 	}
-	if(x >= buffer->lines[y].length()){
-		x = buffer->lines[y].length();
+	if((unsigned)x >= buffer->lines->at(y).length()){
+		x = buffer->lines->at(y).length();
 	}
 	interface->moveTo(y, x);
 }
@@ -401,7 +419,7 @@ void Editor::down(){
 const vector<string>& Editor::getBuffer(){
 	if (mode == 'h')
 		return helpText;
-	return buffer->lines;
+	return *(buffer->lines);
 }
 
 const string& Editor::getStatus(){
@@ -426,9 +444,9 @@ void Editor::save(){
 	if(!std_name){
 		std::ofstream arquivo(filename.c_str());
 		if(arquivo.is_open()){
-			for(int i=0; i < buffer->lines.size(); i++){
-				if (buffer->lines[i] != "")
-					arquivo << buffer->lines[i] << std::endl;
+			for(unsigned i=0; i < buffer->lines->size(); i++){
+				if (buffer->lines->at(i) != "")
+					arquivo << buffer->lines->at(i) << std::endl;
 			}
 			msg = "Arquivo '"+filename+"' salvo!";
 		}
@@ -458,14 +476,14 @@ char Editor::getMode(){
 }
 
 string Editor::getWordBeforeCursor(){
-	string line = buffer->lines[y];
+	string line = buffer->lines->at(y);
 	string word = "";
 	if(line == ""){
 		word = "";
 	}
 	else{
 		std::stringstream ss(line.substr(0,x));
-		if (x == 0 || x > line.length() || !isWordCharacter(line[x-1])){
+		if (x == 0 || x > (int) line.length() || !isWordCharacter(line[x-1])){
 			word = "";
 		}
 		else{
@@ -532,10 +550,11 @@ vector<int> Editor::convertIdxToRowCol(int idx, const string& txt){
 
 string Editor::getBufferTxt(){
 	string txt = "";
-	for(int i = 0; i < buffer->lines.size(); i++){
-		txt += buffer->lines[i] + "\n";
+	for(size_t i = 0; i < buffer->lines->size(); i++){
+		txt += buffer->lines->at(i) + "\n";
 	}
-	txt.pop_back();
+	if (txt.length() >= 1)
+		txt = txt.substr(0, txt.size()-1);
 	return txt;
 }
 
@@ -573,7 +592,7 @@ bool Editor::findReplace(){
 
 	string txt; 
 	if (comando[0] == "s"){
-		txt = buffer->lines[y];
+		txt = buffer->lines->at(y);
 	}
 	else {
 		txt = getBufferTxt();	
@@ -603,8 +622,7 @@ bool Editor::findReplace(){
 			z_mode_output += "("+numToStr(coord[0])+", "+numToStr(coord[1])+"), ";
 		}
 		if(i > 0){
-			z_mode_output.pop_back();
-			z_mode_output.pop_back();
+			z_mode_output = z_mode_output.substr(0, z_mode_output.size()-2);
 		}
 		
 		return true;
@@ -650,8 +668,8 @@ bool Editor::findReplace(){
 
 size_t Editor::rowColToIdx(){
 	size_t out = 0;
-	for(size_t r = 0; r < y; r++){
-		out += buffer->lines[r].length()+1;
+	for(int r = 0; r < y; r++){
+		out += buffer->lines->at(r).length()+1;
 	}
 	out += x + 1;
 	return out;
@@ -688,7 +706,12 @@ string Editor::textCount(){
 	std::ostringstream ss;
 	string txt = getBufferTxt();
 	vector<int> result(4);
-  result = wrapper->textCount(getBufferTxt());
+	if (txt.length() > 0){
+		result = wrapper->textCount(getBufferTxt());
+	}
+	else{
+		result = vector<int>(4,0);
+	}
 	ss << "chrs: " << result[0] << " words: " << result[1] << " nwspc chrs: " << result[2] << " lines: " << result[3];
 	return ss.str();
 }
@@ -745,14 +768,13 @@ bool Editor::openCommand(){
 	
 	string fname = comando[1];
 
-	std::ifstream arquivo(fname);
+	std::ifstream arquivo(fname.c_str());
 	bool opened = false;
 	if((opened = arquivo.is_open())){
 		x = 0;
 		y = 0;
 		opened = true;
 		buffer->deleteContent();
-
 		while(!arquivo.eof()){
 			string line;
 			getline(arquivo, line);
