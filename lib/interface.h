@@ -21,7 +21,7 @@ class Interface {
 		void setEditor(Editor*);
 		void moveTo(int, int);
 
-		void autocomplete(vector<string>, string);
+		bool autocomplete(vector<string>, string);
 		void refreshscr();
 
 

@@ -11,7 +11,12 @@ A todo instante, o editor verifica balanceamento de caracteres (), [] e {}.
 O programa aceita um nome de arquivo como unico argumento de linha de comando
 
 Dependencias:
-O programa foi feito com a versao 5.18 do Perl para a interface de processamento de texto
+libncurses5-dev
+libncurses-dev
+libperl-dev (v5.18)
+
+Executar:
+./TextEditor [nome_do_arquivo]
 
 Comandos:
 x - Sair (nao salva alteracoes no arquivo)

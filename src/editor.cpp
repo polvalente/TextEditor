@@ -16,7 +16,7 @@ using std::vector;
 Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
 	x = 0;
 	y = 0;
-	mode = 'n';
+	mode = 'h';
 	status = "Modo Normal";
 	filename = "untitled";
 	commandBuffer = "";
@@ -82,7 +82,8 @@ Editor::Editor(Interface *i, Wrapper *w, string f) :
 	else {
 		//std::cerr << "Erro ao abrir arquivo: '" << filename << "'\n";
 		buffer->appendLine("");
-		msg = "Novo arquivo aberto: untitled";
+		msg = "Novo buffer vazio";
+		mode = 'h';
 	}
 }
 
@@ -110,7 +111,7 @@ void Editor::updateStatus(){
 			status = "Modo de Remocao";
 			break;
 		case 'h':
-			status = "Ajuda";
+			status = "Ajuda - pressione q para sair desta tela";
 			break;
 		default:
 			break;
@@ -280,12 +281,9 @@ void Editor::input(int ch){
 			case 9:
 				//tab
 				word = getWordBeforeCursor();
-				if (x == 0 || word == ""){
+				if (x == 0 || word == "" || !autocomplete(word)){
 					buffer->lines->at(y).insert(x, 4, ' ');
 					x += 4;
-				}
-				else {
-					autocomplete(word);
 				}
 				break;
 
@@ -438,26 +436,23 @@ void Editor::deleteLine(int i){
 }
 
 void Editor::save(){
-	bool std_name = false;
 	if(filename == ""){
-		filename = "untitled"; 
-		std_name = true;
+		msg = "Escolha um nome de arquivo com ':w <nome>'";
+		return;
 	}
 
-	if(!std_name){
-		std::ofstream arquivo(filename.c_str());
-		if(arquivo.is_open()){
-			for(unsigned i=0; i < buffer->lines->size(); i++){
-				if (buffer->lines->at(i) != "")
-					arquivo << buffer->lines->at(i) << std::endl;
-			}
-			msg = "Arquivo '"+filename+"' salvo!";
+	std::ofstream arquivo(filename.c_str());
+	if(arquivo.is_open()){
+		for(unsigned i=0; i < buffer->lines->size(); i++){
+			if (buffer->lines->at(i) != "")
+				arquivo << buffer->lines->at(i) << std::endl;
 		}
-		else{
-			msg = "Erro ao abrir o arquivo '"+filename+"'.";
-		}
-		arquivo.close();
+		msg = "Arquivo '"+filename+"' salvo!";
 	}
+	else{
+		msg = "Erro ao abrir o arquivo '"+filename+"'.";
+	}
+	arquivo.close();
 }
 
 int Editor::getX(){
@@ -500,10 +495,10 @@ bool Editor::isWordCharacter(char c){
 	return std::isalnum(static_cast<int>(c)) || (c == '_') || (c == '-');
 }
 
-void Editor::autocomplete(string word){
+bool Editor::autocomplete(string word){
 	string txt = getBufferTxt();
 	vector<string> wordList = wrapper->autocomplete(txt, word);
-	interface->autocomplete(wordList, word);
+	return interface->autocomplete(wordList, word);
 }
 
 void Editor::setStatus(string msg){

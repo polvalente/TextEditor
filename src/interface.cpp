@@ -85,9 +85,18 @@ void Interface::moveTo(int x, int y){
 	move(x, y);
 }
 
-void Interface::autocomplete(vector<string> wordList, string word){
+bool Interface::autocomplete(vector<string> wordList, string word){
 	bool exit = false;
-	unsigned i = 0;
+	size_t i = 0;
+	if (wordList.size() == 0){
+		return false;
+	}
+	else if (wordList.size() == 1){
+		for(size_t j = word.length(); j < wordList[0].length(); j++)
+			editor->input(wordList[0][j]);
+		return true;
+	}
+
 	string prev_msg = editor->getMsg();
 	refresh();
 	while(!exit){
@@ -126,6 +135,7 @@ void Interface::autocomplete(vector<string> wordList, string word){
 	string status = editor->getStatus();
 	printStatus(status);
 	refresh();
+	return true;
 }
 
 void Interface::matchCharacters(){

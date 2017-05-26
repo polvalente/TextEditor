@@ -46,7 +46,7 @@ class Editor {
 		string getWordBeforeCursor();
 
 		//funcoes com interface para o Perl
-		void autocomplete(string);
+		bool autocomplete(string);
 		void capitalize();
 		string textCount();
 		vector<int> convertIdxToRowCol(int, const string&);
