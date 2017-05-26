@@ -46,3 +46,8 @@ O programa foi feito com a versao 5.18 do Perl para a interface de processamento
   	- **e [filename]**		editar arquivo
 - **h** Ajuda
 - **c** Autocapitalizar frases
+
+## TO-DO
+- Scroll vertical
+- Scroll horizontal
+- Multiplos buffers
