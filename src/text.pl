@@ -1,4 +1,4 @@
-#!/usr/bin/env perl -w
+#!/usr/bin/env perl
 #
 #Programa de testes para as funcoes em Perl
 #
@@ -9,9 +9,14 @@
 #4b - find/replace all  - busca e substituicao             - aplicadas a todo o arquivo
 #5  - textCount         - contagens de parametros no texto - aplicada a todo o arquivo
 
-use warnings;
+no warnings;
 use TextModule qw/ unique autocomplete matchCharacters findNext findAll replaceNext replaceAll textCount capitalize /;
+use IO::Null;
+
+my $null = IO::Null;
+my $oldfh = select($null);
 
 push(@INC,".");
+
 
 #print(join(" ", findAll($s, "a")), "\n");

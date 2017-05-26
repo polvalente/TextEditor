@@ -59,8 +59,10 @@ $(RELEXE): $(RELOBJS)
 #other rules
 prep:
 	@mkdir -p $(DIRLIST) # silently make dirs if they don't exist
+	@cp $(SRC)/text.pl text.pl
+	@cp $(SRC)/TextModule.pm TextModule.pm
 
 remake: clean all
 
 clean:
-	rm -f $(RELEXE) $(DBGEXE) $(RELOBJS) $(DBGOBJS)
+	rm -f $(RELEXE) $(DBGEXE) $(RELOBJS) $(DBGOBJS) TextModule.pm text.pl

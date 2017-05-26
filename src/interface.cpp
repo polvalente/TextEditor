@@ -132,7 +132,7 @@ void Interface::matchCharacters(){
 	vector<int> idx = editor->matchCharacters(); // returns row, col
 	string msg;
 	if (idx[0] == -1){
-		msg = editor->getMsg();
+		msg = "";
 	}
 	else{
 		msg = "- DESBALANCEADO - COLUNA: "+editor->numToStr(idx[1])+" LINHA: "+editor->numToStr(idx[0]);
