@@ -680,7 +680,12 @@ bool Editor::findReplace(){
 			pos = 0;
 		}
 		for(size_t index = lower; index < upper; index++){
-			tmp = wrapper->replace(buffer->lines->at(index), word, new_word, count, pos);
+			string current_line = buffer->lines->at(index);
+			if (current_line.length() == 0)
+				continue;
+			tmp = wrapper->replace(current_line, word, new_word, count, pos);
+			if (count == 1)
+				continue;
 			vector<string> replaceResult = split(tmp, '\n');
 			buffer->removeLine(index);
 			buffer->insertLine(replaceResult[0], index);
