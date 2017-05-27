@@ -1,5 +1,6 @@
 *.o
 .DS_STORE
 TextEditor
+TextEditor-debug-build
 TextModule.pm
 text.pl
