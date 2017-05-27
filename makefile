@@ -45,7 +45,7 @@ $(DBGDIR)/%.o : $(SRC)/%.cpp
 all: prep release
 
 #debug rules
-debug: $(DBGEXE)
+debug: prep $(DBGEXE)
 
 $(DBGEXE): $(DBGOBJS)
 	$(LD) -o $@ $^ $(INCLUDES) $(LFLAGS)
