@@ -13,19 +13,23 @@
 using std::string;
 using std::vector;
 
-Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
-	x = 0;
-	y = 0;
-	mode = 'h';
-	status = "Modo Normal";
-	filename = "untitled";
-	commandBuffer = "";
-	bufferIndex = 0;
-	z_mode_output = "";
-
+Editor::Editor(Interface *i, Wrapper *w) : 
+	x(0),
+	y(0),
+	min_display_row(0),
+	max_display_row(LINES-1),
+	mode('h'),
+	status("Ajuda"),
+	filename(""),
+	commandBuffer(""),
+	bufferIndex(0),
+	z_mode_output(""),
+	buffer(new Buffer()),
+	interface(i), 
+	wrapper(w)
+{
 	buffer = new Buffer();
 	buffer->appendLine("");
-
 	setupHelp();	
 }
 
@@ -45,6 +49,8 @@ void Editor::setupHelp(){
 Editor::Editor(Interface *i, Wrapper *w, string f) : 
 	x(0),
 	y(0),
+	min_display_row(0),
+	max_display_row(LINES-1),
 	mode('n'),
 	status("Modo normal"),
 	filename(f),
@@ -55,14 +61,6 @@ Editor::Editor(Interface *i, Wrapper *w, string f) :
 	wrapper(w)
 {
 	
-	//x = 0;
-	//y = 0;
-	//mode = 'n';
-	//status = "Modo normal";
-	//commandBuffer = "";
-	//bufferIndex = 0;
-	//z_mode_output = "";
-
 	setupHelp();
 
 	buffer = new Buffer();
@@ -390,7 +388,7 @@ void Editor::left(){
 
 void Editor::right(){
 	msg = "";
-	if (x + 1 < COLS && x + 1 <= (int)buffer->lines->at(y).length()){
+	if (x + 1 < COLS && x + 1 <= buffer->lines->at(y).length()){
 		interface->moveTo(y, ++x);
 	}
 }
@@ -398,9 +396,16 @@ void Editor::right(){
 void Editor::up(){
 	msg = "";
 	if (y-1 >= 0){
+		//limit line-wise
 		y--;
 	}
-	if(x >= (int)buffer->lines->at(y).length()){
+	if(y == 0 && min_display_row != 0){
+		//vertical scroll
+		min_display_row--;
+		max_display_row--;
+	}
+	if(x >= buffer->lines->at(y).length()){
+		//limit-column wise
 		x = buffer->lines->at(y).length();
 	}
 	interface->moveTo(y, x);
@@ -408,19 +413,33 @@ void Editor::up(){
 
 void Editor::down(){
 	msg = "";
-	if(y+1 < (int)LINES-1 && y+1 < (int) buffer->lines->size()){
+	if(y+1 < LINES-1 && y+1 < buffer->lines->size()){
+		//limie line-wise
 		y++;
 	}
-	if((unsigned)x >= buffer->lines->at(y).length()){
+	if(y == LINES-1 && max_display_row < buffer->lines->size()-1){
+		//vertical scroll
+		min_display_row++;
+		max_display_row++;
+	}
+	if(x >= buffer->lines->at(y).length()){
+		//limit column-wise
 		x = buffer->lines->at(y).length();
 	}
+
 	interface->moveTo(y, x);
 }
 
 const vector<string>& Editor::getBuffer(){
 	if (mode == 'h')
 		return helpText;
-	return *(buffer->lines);
+
+	outputBuffer.resize(max_display_row + 1 - min_display_row);
+	for(size_t i = min_display_row; (i <= max_display_row) && (i < buffer->lines->size()); i++){
+		outputBuffer[i-min_display_row] = buffer->lines->at(i);
+	}
+	
+	return outputBuffer;
 }
 
 const string& Editor::getStatus(){

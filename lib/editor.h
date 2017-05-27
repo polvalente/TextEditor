@@ -18,6 +18,7 @@ class Interface;
 class Editor {
 	private:
 		int x, y;
+		int min_display_row, max_display_row;
 		char mode;
 		string msg;
 		vector<string> helpText;
@@ -25,6 +26,8 @@ class Editor {
 		string commandBuffer;
 		size_t bufferIndex;
 		string z_mode_output;
+
+		vector<string> outputBuffer;
 
 		Buffer *buffer;
 		Interface *interface;
