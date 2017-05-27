@@ -35,11 +35,11 @@ O programa foi feito com a versao 5.18 do Perl para a interface de processamento
 - **:** Modo de insercao de comandos, atualmente contem:
 	- **/word** 			encontrar proximo
 	- **/word/g**			encontrar todos
-	- **s/old/new** 	 	substituir proximo na linha
-	- **s/old/new/g** 	 	substituir todos na linha
-	- **ss/old/new** 	 	substituir proximo
-	- **ss/old/new/g** 	 	substituir todos
-  	- **w [filename]**             	salvar arquivo, se nao for fornecido o nome, salva o arquivo atual
+	- **s/old/new** 	 	substituir primeira ocorrência na linha
+	- **s/old/new/g** 	 	substituir todas as ocorrências na linha
+	- **%s/old/new** 	 	substituir primeira ocorrência na linha
+	- **%s/old/new/g** 	 	substituir todas as ocorrências na linha
+  	- **w [filename]**             	salvar arquivo, se nao for fornecido o nome, salva o arquivo atual
   	- **q**                        	sair
   	- **wq**                       	salvar e sair
   	- **x**                        	salvar e sair
