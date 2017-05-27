@@ -33,6 +33,7 @@ class Interface {
 		void printStatus(string &);
 
 		void matchCharacters();
+		//string pretty(string);
 };
 
 #endif

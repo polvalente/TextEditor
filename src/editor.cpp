@@ -584,23 +584,17 @@ bool Editor::findReplace(){
 	string token;
 	vector<string> comando = split(commandBuffer, '/');
 	
-	if(comando.size() < 2 || comando.size() > 4 || (comando[0] != "" && comando[0] != "s" && comando[0] != "ss")){
+	if(comando.size() < 2 || comando.size() > 4 || (comando[0] != "" && comando[0] != "s" && comando[0] != "\%s")){
 		return false;
 	}
 
 	if (comando[comando.size()-1] == "g")
 		all = true;
 
-	string txt; 
-	if (comando[0] == "s"){
-		txt = buffer->lines->at(y);
-	}
-	else {
-		txt = getBufferTxt();	
-	}
 	string &word = comando[1];
 	vector<int> findResult;
 	if (comando[0] == ""){
+		string txt = getBufferTxt();	
 		//find
 		if (all){
 			//find all
@@ -628,7 +622,7 @@ bool Editor::findReplace(){
 		
 		return true;
 	}
-	else if (comando[0] == "s" || comando[0] == "ss"){
+	/*else if (comando[0] == "s"){
 		//replace
 		string &new_word = comando[2];
 		if (comando.size() == 3 && comando[2] == "g"){
@@ -643,20 +637,53 @@ bool Editor::findReplace(){
 		}
 		else{
 			//replace next
-			tmp = wrapper->replace(txt, word, new_word, count, rowColToIdx());
+			tmp = wrapper->replace(txt, word, new_word, count, x);
 		}
 		vector<string> replaceResult = split(tmp);
-		if (comando[0] == "ss"){
+		if (comando[0] == "\%s"){
 			buffer->deleteContent();
 			for (size_t i = 0; i < replaceResult.size(); i++){
-			//for (size_t i = 0; i < comando.size(); i++){
-				//buffer->appendLine(comando[i]);
 				buffer->appendLine(replaceResult[i]);
 			}
 		}
 		else {
-			buffer->removeLine(y);
-			buffer->insertLine(replaceResult[0], y);
+		buffer->removeLine(y);
+		buffer->insertLine(replaceResult[0], y);
+		return true;
+	}*/
+	else if (comando[0] == "s" || comando[0] == "\%s"){
+		//replace
+		string &new_word = comando[2];
+		if (comando.size() == 3 && comando[2] == "g"){
+			all = false;
+		}
+		int count = 0;
+		string tmp;
+		size_t lower, upper;
+		if (comando[0] == "s"){
+			//replace one line
+			lower = y;
+			upper = y + 1;
+		}
+		else{
+			//replace all lines
+			lower = 0;
+			upper = buffer->lines->size();
+		}
+		int pos;
+		if(all){
+			//replace all occurences in line
+			pos = -1;
+		}
+		else{
+			//replace first occurence in line
+			pos = 0;
+		}
+		for(size_t index = lower; index < upper; index++){
+			tmp = wrapper->replace(buffer->lines->at(index), word, new_word, count, pos);
+			vector<string> replaceResult = split(tmp, '\n');
+			buffer->removeLine(index);
+			buffer->insertLine(replaceResult[0], index);
 		}
 		return true;
 	}
@@ -718,7 +745,7 @@ string Editor::textCount(){
 }
 
 bool Editor::saveCommand(){
-	vector<string> comando = split(commandBuffer, ' ');
+	vector<string> comando = split(commandBuffer);
 	if (comando.size() > 2 || comando.size() < 1|| comando[0] != "w"){
 		return false;
 	}
@@ -763,7 +790,7 @@ bool Editor::quitCommand(){
 }
 
 bool Editor::openCommand(){
-	vector<string> comando = split(commandBuffer, ' ');
+	vector<string> comando = split(commandBuffer);
 	if (comando[0] != "e" || comando.size() != 2)
 		return false;
 	

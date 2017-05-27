@@ -52,7 +52,7 @@ class Editor {
 		vector<int> convertIdxToRowCol(int, const string&);
 		string getBufferTxt();
 
-		vector<string> split(const string, const char='\n');
+		vector<string> split(const string, const char=' ');
 
 		template<class T>
 		string join(vector<T>, string);

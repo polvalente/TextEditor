@@ -64,7 +64,8 @@ void Interface::printBuffer(vector<string> &lines){
 			move(i, 0);
 		}
 		else{
-			mvprintw(i, 0, "%s", lines[i].c_str()); // "%s" para escapar chars como %
+			string line = lines[i];
+			mvprintw(i, 0, "%s", line.c_str()); // "%s" para escapar chars como %
 		}
 		clrtoeol();
 	}
@@ -72,10 +73,29 @@ void Interface::printBuffer(vector<string> &lines){
 
 void Interface::printStatus(string &status){
 	attron(A_REVERSE);
-	mvprintw(LINES-1, 0, "%s", status.c_str()); // %s para escapar chars como %
+	string line = status;
+	mvprintw(LINES-1, 0, "%s", line.c_str()); // %s para escapar chars como %
 	clrtoeol();
 	attroff(A_REVERSE);
 }
+/*
+string Interface::pretty(string s){
+	return s;
+	string out = s;
+	vector<size_t> pos;
+	for(size_t i=0; i < out.length(); i++){
+		if (out[i] == '%')
+			pos.push_back(i);
+	}
+	if (pos.size() == 0)
+		return out;
+
+	for(size_t i = 0; i < pos.size(); i++){
+		out.insert(pos[(pos.size()-1)-i], "%");
+	}
+
+	return out;
+}*/
 
 void Interface::setEditor(Editor *e){
 	editor = e;
