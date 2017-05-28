@@ -4,17 +4,6 @@ Este editor foi escrito por Paulo Oliveira Lenzi Valente - 2017
 
 Parte da estrutura da interface grafica foi inspirada no tutorial em http://cheukyin699.github.io/tutorial/c++/2015/02/01/ncurses-editor-tutorial-01.html
 
-Funcionalidades:
-O editor, como o Vim, possui um modo 'normal' para insercao de comandos, e outros modos que executam suas funcionalidades.
-A todo instante, o editor verifica balanceamento de caracteres (), [] e {}.
-
-O programa aceita um nome de arquivo como unico argumento de linha de comando
-
-Dependencias:
-libncurses5-dev
-libncurses-dev
-libperl-dev (v5.18)
-
 Executar:
 ./TextEditor [nome_do_arquivo]
 
