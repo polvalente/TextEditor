@@ -7,7 +7,6 @@
 ### Dependencias 
 - Bibliotecas
     - libncurses5-dev
-    - libncurses-dev
     - libperl-dev
 - Módulos do Perl
     - IO::Null
