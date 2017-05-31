@@ -17,6 +17,7 @@ using std::vector;
 class Interface; // Declaracao de nome para evitar loop de "include"
 
 class Editor {
+	//Backend do editor
 	private:
 		int x, y; // posicao do cursor no buffer
 		char mode; // modo de operacao do editor

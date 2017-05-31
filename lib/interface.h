@@ -1,4 +1,3 @@
-
 #ifndef _INTERFACE_H_
 #define _INTERFACE_H_
 
@@ -14,26 +13,25 @@ using std::vector;
 class Editor;
 
 class Interface {
+	//Interface grafica do editor
 	public:
-		Interface(string);
-		void init();
-		int mainLoop();
-		void setEditor(Editor*);
-		void moveTo(int, int);
+		Interface(string); // construtor nao-padrao para a interface grafica
+		void init(); // inicializa a ncurses
+		int mainLoop(); // loop principal do programa
+		void setEditor(Editor*); // setter para o ponteiro do editor
+		void moveTo(int, int); // move o cursor para as coordenadas especificadas
 
-		bool autocomplete(vector<string>, string);
-		void refreshscr();
-
+		bool autocomplete(vector<string>, string); // chama a funcao de autocompletar palavra
+		void refreshscr(); // atualiza a tela
 
 	private:
-		string filename;
-		Editor *editor;
+		string filename; // nome do arquivo atual (usado no construtor)
+		Editor *editor; // ponteiro para o 'backend' do editor
 
-		void printBuffer(vector<string> &);
-		void printStatus(string &);
+		void printBuffer(vector<string> &); // imprime o buffer na tela
+		void printStatus(string &); // imprime a barra de status
 
-		void matchCharacters();
-		//string pretty(string);
+		void matchCharacters(); // chama a funcao de balancear caracteres
 };
 
 #endif
