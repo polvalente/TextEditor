@@ -72,11 +72,13 @@ void Interface::printBuffer(vector<string> &lines){
 }
 
 void Interface::printStatus(string &status){
-	attron(A_REVERSE);
+	if (editor->getMode() != ':')
+		attron(A_REVERSE);
 	string line = status;
 	mvprintw(LINES-1, 0, "%s", line.c_str()); // %s para escapar chars como %
 	clrtoeol();
-	attroff(A_REVERSE);
+	if (editor->getMode() != ':')
+		attroff(A_REVERSE);
 }
 /*
 string Interface::pretty(string s){

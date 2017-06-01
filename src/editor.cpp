@@ -13,81 +13,88 @@
 using std::string;
 using std::vector;
 
-Editor::Editor(Interface *i, Wrapper *w) : interface(i), wrapper(w){
-	x = 0;
-	y = 0;
-	mode = 'h';
-	status = "Modo Normal";
-	filename = "untitled";
-	commandBuffer = "";
-	bufferIndex = 0;
-	z_mode_output = "";
-
-	buffer = new Buffer();
-	buffer->appendLine("");
-
-	setupHelp();	
+Editor::Editor(Interface *i, Wrapper *w) : 
+	//Inicializando posicao do cursor
+	x(0),
+	y(0),
+	//Nao foi recebido um nome de arquivo, abre em modo de ajuda
+	mode('h'),
+	//mensagem relacionada ao modo 'h'
+	status("Ajuda - pressione q para sair"),
+	//Nao foi recebido nome de arquivo
+	filename(""),
+	//Buffer de comando vazio
+	commandBuffer(""),
+	bufferIndex(0),
+	//mensagem do modo auxiliar vazia
+	z_mode_output(""),
+	interface(i),
+	wrapper(w){
+	//Construtor nao-padrao
+	buffer = new Buffer(); // Alocando um novo buffer no heap
+	buffer->appendLine(""); // Linha vazia para evitar acessos indevidos em vector vazio
+	setupHelp(); // leitura do arquivo de ajuda	
 }
 
 void Editor::setupHelp(){
-	string helpFilename="./lib/help.txt";
-	std::ifstream arquivo(helpFilename.c_str());
-	if(arquivo.is_open()){
-		while(!arquivo.eof()){
+	//Metodo que le o arquivo de ajuda e guarda seu conteudo no atributo "helpText"
+	string helpFilename="./lib/help.txt"; // localizacao padrao do arquivo de ajuda
+	std::ifstream arquivo(helpFilename.c_str()); // abrindo arquivo
+	if(arquivo.is_open()){ // foi possivel abrir
+		while(!arquivo.eof()){ // iterando ao longo do arquivo
 			string line;
-			getline(arquivo, line);
-			helpText.push_back(line);
+			getline(arquivo, line); // lendo a linha atual
+			helpText.push_back(line); // guardando a linha no final do vector
 		}
-		arquivo.close();
+		arquivo.close(); // fechando arquivo
 	}
 }
 
 Editor::Editor(Interface *i, Wrapper *w, string f) : 
+	//Inicializando posicao do cursor
 	x(0),
 	y(0),
+	//Foi recebido um nome de arquivo, abre em modo normal
 	mode('n'),
+	//mensagem relacionada ao modo 'n'
 	status("Modo normal"),
+	//nome do arquivo recebido
 	filename(f),
+	//buffer de comando vazio
 	commandBuffer(""),
 	bufferIndex(0),
+	//mensagem do modo auxiliar vazia
 	z_mode_output(""),
 	interface(i),
 	wrapper(w)
 {
+	//Construtor nao-padrao
 	
-	//x = 0;
-	//y = 0;
-	//mode = 'n';
-	//status = "Modo normal";
-	//commandBuffer = "";
-	//bufferIndex = 0;
-	//z_mode_output = "";
+	setupHelp(); // leitura do arquivo de ajuda
 
-	setupHelp();
-
-	buffer = new Buffer();
+	buffer = new Buffer(); // alocacao de buffer
 
 	//lendo conteudo do arquivo pro buffer
-	
 	std::ifstream arquivo(filename.c_str());
 	if(arquivo.is_open()){
-		while(!arquivo.eof()){
+		while(!arquivo.eof()){ // iterando ao longo do arquivo
 			string line;
-			getline(arquivo, line);
-			buffer->appendLine(line);
+			getline(arquivo, line); // lendo a linha atual
+			buffer->appendLine(line); // guardando a linha lida no final do buffer
 		}
-		msg = "Arquivo aberto: "+filename;
-		arquivo.close();
+		msg = "Arquivo aberto: "+filename; // mensagem complementar de status
+		arquivo.close(); // fechando arquivo
 	}
 	else {
 		//std::cerr << "Erro ao abrir arquivo: '" << filename << "'\n";
-		buffer->appendLine("");
-		msg = "Novo buffer vazio";
-		mode = 'h';
+		buffer->appendLine(""); // linha vazia para evitar acessos indevidos ao buffer
+		msg = "Novo buffer vazio"; // buffer de criacao de arquivo novo
+		mode = 'h'; // modo de ajuda
 	}
 }
 
 void Editor::updateStatus(){
+	//Metodo para configuracao do status
 	switch(mode){
 		case 'n':
 			status = "Modo Normal";
@@ -104,7 +111,7 @@ void Editor::updateStatus(){
 			break;
 		case ':':
 			status = ":";
-			status+= commandBuffer;
+			status+= commandBuffer; // configura a mensagem com o conteudo do buffer de comando para emular a digitacao da palavra
 			msg = "";
 			break;
 		case 'd':
@@ -117,11 +124,12 @@ void Editor::updateStatus(){
 			break;
 	}
 	if (mode != ':' && mode != 'z' && mode != 'h'){
-		status += "\tCOLUNA: " + numToStr(x) + "\tLINHA: " + numToStr(y) + " - " +  textCount() + " " + msg;
+		status += "\tCOLUNA: " + numToStr(x) + "\tLINHA: " + numToStr(y) + " - " +  textCount() + " " + msg; // configura a mensagem complementar com informacoes do editor
 	}
 }
 
 string Editor::numToStr(int num){
+	//Conversao de int para string
 	std::ostringstream ss;
 	ss.clear();
 	ss << num;
@@ -129,75 +137,86 @@ string Editor::numToStr(int num){
 }
 
 Editor::~Editor(){
+	// apaga o buffer alocado dinamicamente
 	delete buffer;
 }
 
 void Editor::del_key(){
+	//encapsulamento da funcao da tecla del
 	if (x == (int)buffer->lines->at(y).length() && y != (int)buffer->lines->size() - 1){
+		// se estiver no final da linha, apaga o '\n' e faz a linha de baixo voltar para o final da atual
 		buffer->lines->at(y) += buffer->lines->at(y+1);
 		deleteLine(y+1);
 	}
 	else{
+		//apaga o caracter abaixo do cursor
 		buffer->lines->at(y).erase(x, 1);
 	}
 }
 
 void Editor::input(int ch){
+	//lida com entrada do teclado
 	string word;
 	switch(ch){
+		//navega na tela de acordo com as 4 teclas direcionais
 		case KEY_LEFT:
 			left();
-			return;
+			if (mode != ':' && mode != 'z')
+				return;
 		case KEY_RIGHT:
 			right();
-			return;
+			if (mode != ':' && mode != 'z')
+				return;
 		case KEY_UP:
 			up();
-			return;
+			if (mode != ':' && mode != 'z')
+				return;
 		case KEY_DOWN:
-				down();
+			down();
+			if (mode != ':' && mode != 'z')
 				return;
 		default:
 				break;
 	}
 
 	if (mode == 'n'){
+		//modo normal
 			switch(ch){
-			case 'x':
+			case 'x': // comando para sair do editor
 				mode = 'x';
 				break;
-			case 'd':
+			case 'd': // modo de deletar linha para emular o comando 'dd' do Vim
 				mode = 'd';
 				break;
-			case 'o':
+			case 'o': // insere linha abaixo do cursor e entra em modo de insercao com o cursor na nova linha
 				mode = 'i';
 				buffer->insertLine("",y+1); 
 				y++;
 				x = 0;
 				break;
-			case 'O':
+			case 'O': // insere linha acima da linha atual e entra em modo de insercao com o cursor na nova linha
 				mode = 'i';
 				buffer->insertLine("",y);
 				x = 0;
 				break;
-			case 'i':
+			case 'i': // entrar no modo de insercao
 				mode = 'i';
 				break;
-			case 'w':
+			case 'w': // salvar buffer atual
 				save();
 				break;
 			case ':':
-				mode = ':';
+				mode = ':'; // entrar no modo comandos do tipo ":comando"
 				commandBuffer = "";
 				break;
-			case 'h':
+			case 'h': // exibir tela de ajuda
 				mode = 'h';
 				break;
 			case 'c':
-			case 'C':
+			case 'C': // capitalizar frases no buffer atual
 				capitalize();
 				break;
-			case KEY_DC:
+			case KEY_DC: // tecla DEL
 				del_key();
 				break;
 			default:
@@ -205,10 +224,11 @@ void Editor::input(int ch){
 			}
 	}
 	else if (mode == 'h'){
+		// modo de ajuda
 		switch(ch){
 			case 'q':
 			case 'Q':
-			case MY_KEY_ESC:
+			case MY_KEY_ESC: // sair do modo de ajuda
 				mode = 'n';
 				break;
 			default:
@@ -216,8 +236,9 @@ void Editor::input(int ch){
 		}
 	}
 	else if (mode == 'd'){
+		//modo para emular do comando 'dd'
 		switch(ch){
-			case 'd':
+			case 'd': // tecla 'd', apaga a linha atual e corrige a posicao do cursor de acordo
 				buffer->removeLine(y);
 				if (y > 0){
 					y--;
@@ -230,18 +251,19 @@ void Editor::input(int ch){
 				mode = 'n';
 				break;
 			default:
-				mode = 'n';
+				mode = 'n'; // tecla invalida, sai do modo intermediario
 				break;
 		}
 	}
 	else if (mode == 'i'){
+		//modo de insercao de conteudo
 		switch(ch){
-			case MY_KEY_ESC:
+			case MY_KEY_ESC: // voltar para o modo normal
 				mode = 'n';
 				break;
 			
 			case MY_KEY_BACKSPC:
-			case KEY_BACKSPACE:
+			case KEY_BACKSPACE: // apagar o caracter anterior ao cursor
 				if (x == 0 && y == 0){
 				}
 				else if (x == 0 && y > 0){
@@ -257,13 +279,12 @@ void Editor::input(int ch){
 				}
 				break;
 			
-			case KEY_DC:
-				//delete
+			case KEY_DC: // tecla DEL
 				del_key();
 				break;
 			
 			case KEY_ENTER:
-			case '\n':
+			case '\n': // pular linha e deslocar tudo apos o cursor pra linha seguinte
 				if (x < (int)buffer->lines->at(y).length()){
 					buffer->insertLine(buffer->lines->at(y).substr(x, buffer->lines->at(y).length() - x), y + 1);
 					buffer->lines->at(y).erase(x, buffer->lines->at(y).length() - x);
@@ -281,7 +302,8 @@ void Editor::input(int ch){
 			case 9:
 				//tab
 				word = getWordBeforeCursor();
-				if (x == 0 || word == "" || !autocomplete(word)){
+				if (x == 0 || word == "" || !autocomplete(word)){ // se nao estiver na primeira coluna e tiver uma palavra antes do cursor, tenta autocompletar
+					//Nao autocompletou ou esta na primeira coluna. Inserir tab
 					buffer->lines->at(y).insert(x, 4, ' ');
 					x += 4;
 				}
@@ -289,7 +311,7 @@ void Editor::input(int ch){
 
 			default:
 				//outros caracteres
-				buffer->lines->at(y).insert(x, 1, static_cast<char>(ch));
+				buffer->lines->at(y).insert(x, 1, static_cast<char>(ch)); // inserir caracter no buffer
 				x++;
 				break;
 		}
@@ -308,13 +330,13 @@ void Editor::input(int ch){
 			case KEY_BACKSPACE:
 			case MY_KEY_ESC:
 				mode = 'n';
-				setStatus("");
+				setStatus(""); // volta para o modo normal
 				break;
-			case 'i':
+			case 'i': // entra no modo de insercao
 				mode = 'i';
 				setStatus("");
 				break;
-			case ':':
+			case ':': // entra no modo de comando
 				mode = ':';
 				break;
 			default:
@@ -323,6 +345,7 @@ void Editor::input(int ch){
 		
 	}
 	else if (mode == ':'){
+		// modo de comando
 		switch(ch){
 			case KEY_LEFT:
 				bufferIndex = (bufferIndex > 0) ? bufferIndex - 1 : 0;
@@ -332,18 +355,19 @@ void Editor::input(int ch){
 				break;
 
 			case MY_KEY_BACKSPC:
-			case KEY_BACKSPACE:
+			case KEY_BACKSPACE: // backspace
 				if (commandBuffer.size() > 0)
 					commandBuffer.erase(--bufferIndex, 1);
 				break;
 
-			case KEY_DC:
+			case KEY_DC: // del
 				if (bufferIndex < commandBuffer.length())
 					commandBuffer.erase(bufferIndex, 1);
 				break;
 
 			case KEY_ENTER:
 			case '\n':
+				//quando recebe um "enter", tenta parsear o comando para ver se eh um comando valido
 				if(findReplace()){
 					mode = 'z';
 					commandBuffer = "";
@@ -365,13 +389,13 @@ void Editor::input(int ch){
 				return;
 				break;
 
-			case MY_KEY_ESC:
+			case MY_KEY_ESC: // ESC - voltar para o modo normal
 				mode = 'n';
 				commandBuffer = "";
 				bufferIndex = 0;
 				return;
 				break;
-			default:
+			default: // inserir caracter no buffer de comando
 				if (bufferIndex > commandBuffer.length())
 					bufferIndex = commandBuffer.length();
 				commandBuffer.insert(bufferIndex++, 1, static_cast<char>(ch));
@@ -381,7 +405,7 @@ void Editor::input(int ch){
 	}
 }
 
-void Editor::left(){
+void Editor::left(){ // andar para a esquerda
 	msg = "";
 	if (x-1 >= 0){
 		interface->moveTo(y, --x);
@@ -457,7 +481,7 @@ void Editor::save(){
 
 int Editor::getX(){
 	if (mode == ':'){
-		return bufferIndex;
+		return bufferIndex+1;
 	}
 	return x;
 }
