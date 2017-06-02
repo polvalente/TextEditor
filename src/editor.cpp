@@ -481,58 +481,62 @@ void Editor::save(){ // salvar arquivo atual
 }
 
 int Editor::getX(){
-	if (mode == ':'){
+	if (mode == ':'){ // no modo :, retorna a posicao do cursor no buffer de comando
 		return bufferIndex+1;
 	}
-	return x;
+	return x; // retorna a posicao do cursor na tela
 }
 
 int Editor::getY(){
 	if (mode == ':'){
-		return LINES-1; 
+		return LINES-1; // retorna a linha do buffer de comando
 	}
-	return y;
+	return y; // retorna a posicao do cursor na tela
 }
 
-char Editor::getMode(){
+char Editor::getMode(){ // retorna o modo de operacao atual
 	return mode;
 }
 
-string Editor::getWordBeforeCursor(){
-	string line = buffer->lines->at(y);
-	string word = "";
+string Editor::getWordBeforeCursor(){ // retorna a palavra que precede o cursor
+	string line = buffer->lines->at(y); // analisa a linha atual
+	string word = ""; // palavra a principio nao existe
 	if(line == ""){
-		word = "";
+		word = ""; // nao ha palavra se a linha esta vazia
 	}
 	else{
-		std::stringstream ss(line.substr(0,x));
+		std::stringstream ss(line.substr(0,x)); // string stream com substring que precede o cursor, funciona para dar split em espacos
 		if (x == 0 || x > (int) line.length() || !isWordCharacter(line[x-1])){
 			word = "";
 		}
 		else{
-			while(ss >> word);
+			while(ss >> word); // percorre o stringstream, para colocar a ultima palavra do stream em word
 		}
 	}
 	return word;
 }
 
-bool Editor::isWordCharacter(char c){
+bool Editor::isWordCharacter(char c){ // characters valid for a word
 	return std::isalnum(static_cast<int>(c)) || (c == '_') || (c == '-');
 }
 
 bool Editor::autocomplete(string word){
 	string txt = getBufferTxt();
+	//invoca a interface com o perl para obter uma lista de palavras para autocompletar a palavra recebida
 	vector<string> wordList = wrapper->autocomplete(txt, word);
+	//invoca a interface grafica para mostrar a lista de palavras recebida e completar a palavra se necessario
 	return interface->autocomplete(wordList, word);
 }
 
 void Editor::setStatus(string msg){
+	//setter para modificar a mensagem complementar de status e atualizar o status atual
 	this->msg = msg;
 	updateStatus(); 
 }
 
 
 vector<int> Editor::matchCharacters(){
+	//balanceamento de parentesis, colchetes e chaves
 	vector<int> coords;
 	string txt = getBufferTxt();
 	if(txt.length() < 1){
@@ -543,29 +547,30 @@ vector<int> Editor::matchCharacters(){
 	char list[] = "([{";
 	for (int i = 0; i < 3; i++){
 		idx = wrapper->matchCharacters(txt, list[i]);
-		if (idx != -1)
+		if (idx != -1) // se deu problema, para de verificar
 			break;
 	}
 
-	if (idx == -1){
+	if (idx == -1){ // nao deu problema
 		coords = vector<int>(2,-1);
 		return coords;
 	}
 	
-	coords = convertIdxToRowCol(idx, txt);
+	coords = convertIdxToRowCol(idx, txt); // deu problema, converte indice linear pra (linha, coluna) e retorna a posicao
 	return coords;
 }
 
 vector<int> Editor::convertIdxToRowCol(int idx, const string& txt){
+	//converte indice linear para indice (linha, coluna)
 	vector<int> out(2);
 	int row = 0;
 	int col = 0;
-	for (int i = 1; i <= idx; i++){
-		if (txt[i-1] == '\n'){
+	for (int i = 1; i <= idx; i++){ // comeca no 1 para caso o indice seja 0, ele retorne (0,0)
+		if (txt[i-1] == '\n'){ // cada \n encontrado incrementa uma linha e zera a coluna
 			col = 0;
 			row++;
 		}
-		else{
+		else{ // outro caracter qualquer incrementa a coluna
 			col++;
 		}
 	}
@@ -574,25 +579,19 @@ vector<int> Editor::convertIdxToRowCol(int idx, const string& txt){
 	return out;
 }
 
-string Editor::getBufferTxt(){
+string Editor::getBufferTxt(){ // retorna uma string contendo o conteudo do buffer
 	vector<string> &lines = *(buffer->lines);
 	return join(lines,"\n");
-	string txt = "";
-	for(size_t i = 0; i < buffer->lines->size(); i++){
-		txt += buffer->lines->at(i) + "\n";
-	}
-	if (txt.length() >= 1)
-		txt = txt.substr(0, txt.size()-1);
-	return txt;
 }
 
 void Editor::capitalize(){
+	//Capitaliza todas as frases do texto
 	string txt = wrapper->capitalize(getBufferTxt());
 	std::istringstream ss(txt);
 	string line;
 	if (txt.length() < 1)
 		return;
-	buffer->deleteContent();
+	buffer->deleteContent(); // apaga o conteudo do buffer e substitui pelas linhas do string stream com o conteudo modificado
 	while(!ss.eof()){
 		getline(ss,line);
 		buffer->appendLine(line);	
@@ -607,20 +606,20 @@ bool Editor::findReplace(){
 	 */
 	bool all = false;
 
-	std::istringstream stream(commandBuffer);
 	string token;
-	vector<string> comando = split(commandBuffer, '/');
+	vector<string> comando = split(commandBuffer, '/'); // quebra a string do commandBuffer nos argumentos para parsear 
 	
 	if(comando.size() < 2 || comando.size() > 4 || (comando[0] != "" && comando[0] != "s" && comando[0] != "\%s")){
+		//caso nao esteja no formato correto de comando, retorna false
 		return false;
 	}
 
-	if (comando[comando.size()-1] == "g")
+	if (comando[comando.size()-1] == "g") // verifica se quer todas as ocorrencias (na linha, no caso do replace, ou no arquivo, no caso do find)
 		all = true;
 
 	string &word = comando[1];
 	vector<int> findResult;
-	if (comando[0] == ""){
+	if (comando[0] == ""){ // nada antes da primeira barra -> find
 		string txt = getBufferTxt();	
 		//find
 		if (all){
@@ -649,7 +648,7 @@ bool Editor::findReplace(){
 		
 		return true;
 	}
-	else if (comando[0] == "s" || comando[0] == "\%s"){
+	else if (comando[0] == "s" || comando[0] == "\%s"){ // s ou %s antes da primeira barra -> replace
 		//replace
 		string &new_word = comando[2];
 		if (comando.size() == 3 && comando[2] == "g"){
@@ -677,7 +676,7 @@ bool Editor::findReplace(){
 			//replace first occurence in line
 			pos = 0;
 		}
-		for(size_t index = lower; index < upper; index++){
+		for(size_t index = lower; index < upper; index++){ // percorre as linhas e executa o replace em cada uma
 			string current_line = buffer->lines->at(index);
 			if (current_line.length() == 0)
 				continue;
@@ -693,47 +692,47 @@ bool Editor::findReplace(){
 	else{
 		return false; //nao deve acontecer
 	}
-	interface->refreshscr();
+	interface->refreshscr(); // atualiza a tela da interface grafica
 	return true;
 }
 
-size_t Editor::rowColToIdx(){
+size_t Editor::rowColToIdx(){ // converte indices (linha, coluna) para indices lineares
 	size_t out = 0;
 	for(int r = 0; r < y; r++){
-		out += buffer->lines->at(r).length()+1;
+		out += buffer->lines->at(r).length()+1; // para cada linha anterior a atual, soma seu comprimento + 1 para o '\n'
 	}
-	out += x + 1;
+	out += x + 1; // adiciona o numero de caracteres que antecede o cursor + 1
 	return out;
 }
 
 template <class T>
-string Editor::join(vector<T> v, string sep){
+string Editor::join(vector<T> v, string sep){ // une os elementos do vector recebido em uma string utilizando a string separadadora ('sep') especificada
 	if (v.size() < 1)
 		return "";
 	std::ostringstream oss("");
 	size_t i = 0;
 	for(i = 0; i < v.size() - 1; i++){
-		oss << v[i] << sep;
+		oss << v[i] << sep; // para cada elemento ate o penultimo, append no oss do elemento e do separador
 	}
-	oss << v[i];
-	return oss.str();
+	oss << v[i]; // append do ultimo elemento sem separador
+	return oss.str(); // conversao de oss para string
 }
 
-vector<string> Editor::split(const string s, const char sep){
+vector<string> Editor::split(const string s, const char sep){ // separa uma string em um vector de strings de acordo com o char separador recebido
 	vector<string> output;
 	std::istringstream ss(s);
 	string tok;
-	while(std::getline(ss, tok, sep)){
-		output.push_back(tok);
+	while(std::getline(ss, tok, sep)){ // faz uso do getline com separador especificado, em cima do input string stream que contem o texto recebido
+		output.push_back(tok); // append no vector com o trecho recebido
 	}
-	return output;
+	return output; // retorna o vector de split
 }
 
-string Editor::getMsg(){
+string Editor::getMsg(){ // getter da mensagem complementar de status atual
 	return msg;
 }
 
-string Editor::textCount(){
+string Editor::textCount(){ // invoca a analise de contagem de texto do perl
 	std::ostringstream ss;
 	string txt = getBufferTxt();
 	vector<int> result(4);
@@ -741,50 +740,50 @@ string Editor::textCount(){
 		result = wrapper->textCount(getBufferTxt());
 	}
 	else{
-		result = vector<int>(4,0);
+		result = vector<int>(4,0); // se o texto esta vazio, a contagem e nula
 	}
-	ss << "chrs: " << result[0] << " words: " << result[1] << " nwspc chrs: " << result[2] << " lines: " << result[3];
-	return ss.str();
+	ss << "chrs: " << result[0] << " words: " << result[1] << " nwspc chrs: " << result[2] << " lines: " << result[3]; // construindo a string formatada em um stringstream
+	return ss.str(); // convertendo stringstream para string
 }
 
-bool Editor::saveCommand(){
+bool Editor::saveCommand(){ // parser de comando para salvar :w
 	vector<string> comando = split(commandBuffer);
 	if (comando.size() > 2 || comando.size() < 1|| comando[0] != "w"){
 		return false;
 	}
 	else if (comando.size() == 1) {
-		comando.push_back(filename);
+		comando.push_back(filename); // se nao recebeu nome de arquivo, usa o nome de arquivo atual
 	}
 
 	string old_filename = filename;
-	filename = comando[1];
-	save();
-	filename = old_filename;
+	filename = comando[1]; // modifica temporariamente o filename com o segundo argumento em comando
+	save(); // invoca a funcao save padrao
+	filename = old_filename; // desfaz a modificacao no nome do arquivo
 
 	return true;
 }
 
-bool Editor::quitCommand(){
+bool Editor::quitCommand(){ // parser para o comando de saida :q, :x ou :wq
 	string char0 = "";
 	string char1 = "";
 
-	if (commandBuffer.length() < 1){
+	if (commandBuffer.length() < 1){ // nao eh um comando valido
 		return false;
 	}
-	else if (commandBuffer.length() == 2){
+	else if (commandBuffer.length() == 2){ // se tiver dois caracteres, char1 recebe o segundo caracter
 		char1 = commandBuffer[1];		
 	}
-	else if (commandBuffer.length() > 2){
+	else if (commandBuffer.length() > 2){ // se tiver mais que dois caracteres, nao eh um comando valido
 		return false;
 	}
 
-	char0 = commandBuffer[0];
+	char0 = commandBuffer[0]; // char0 recebe o primeiro caracter do comando
 
-	if (char0 == "q" && commandBuffer.length() == 1){
+	if (char0 == "q" && commandBuffer.length() == 1){ // se char0 for q e nao tiver mais nenhum caracter, sai sem salvar
 		//quit without save
 		return true;
 	}
-	else if (char0 == "x" || (char0 == "w" && char1 == "q")){
+	else if (char0 == "x" || (char0 == "w" && char1 == "q")){ // se char0 for x ou char0 e char1 forem w e q, salva e sai
 		//save and quit
 		save();
 		return true;
@@ -792,16 +791,16 @@ bool Editor::quitCommand(){
 	return false;
 }
 
-bool Editor::openCommand(){
+bool Editor::openCommand(){ // parser do comando :e <filename>
 	vector<string> comando = split(commandBuffer);
-	if (comando[0] != "e" || comando.size() != 2)
+	if (comando[0] != "e" || comando.size() != 2) // nao segue formato valido
 		return false;
 	
-	string fname = comando[1];
+	string fname = comando[1]; // nome do arquivo para abrir eh o segundo argumento
 
-	std::ifstream arquivo(fname.c_str());
+	std::ifstream arquivo(fname.c_str()); // abre o arquivo do nome especificado
 	bool opened = false;
-	if((opened = arquivo.is_open())){
+	if((opened = arquivo.is_open())){ // se abriu, reconstroi o buffer e a mensagem de status
 		x = 0;
 		y = 0;
 		opened = true;
@@ -816,7 +815,7 @@ bool Editor::openCommand(){
 		msg = "Arquivo aberto: "+filename;
 		arquivo.close();
 	}
-	else {
+	else { // nao abriu, entao eh um novo arquivo. reconstroi o buffer e o status de acordo
 		x = 0;
 		y = 0;
 		filename = fname;
@@ -829,5 +828,6 @@ bool Editor::openCommand(){
 }
 
 bool Editor::bufferEmpty(){
+	//retorna verdadeiro se o buffer esta vazio
 	return (buffer->lines->size() == 1 && buffer->lines->at(0) == "");
 }	

@@ -79,11 +79,11 @@ sub matchCharacters {
         $c = substr($txt,$index,1);
 
         if ($c eq $char){
-            push(@openStack, [$char, $index]);
+            push(@openStack, [$char, $index]); # for each opening char, push onto stack
             $numel++;
         }
         elsif ($c eq $charType{$char}){
-            if ($numel == 0){
+            if ($numel == 0){ # if trying to pop from empty stack, closed too many chars, return current char as error
                 return ($char, $index);
             }
             pop(@openStack);
@@ -91,28 +91,28 @@ sub matchCharacters {
         }
     }
 
-    if ($numel != 0){
+    if ($numel != 0){ # if stack is not empty, opened too many chars, return top of the stack as error
         return @{$openStack[-1]};
     }
 
-    return ($char, -1);
+    return ($char, -1); # no error
 }
 
 sub findNext {
     my $txt = $_[0];
     my $word = $_[1];
     my $current = $_[2];
-    return index($txt, $word, $current);
+    return index($txt, $word, $current); # find $word in $txt, from pos=$current
 }
 
 sub findAll {
     my $txt = $_[0];
     my $word = $_[1];
 		my @matches;
-		while($txt =~ m/($word)/g){
-			push(@matches, pos($txt)-length($1));
+		while($txt =~ m/($word)/g){ #find all occurrences
+			push(@matches, pos($txt)-length($1)); #pushes each occurence onto a stack of matches
 		}
-		return @matches;
+		return @matches; # returns all matches
 }
 
 sub replaceNext {
@@ -121,56 +121,56 @@ sub replaceNext {
     my $replace = $_[2];
     my $current = $_[3];
 
-    my $position = findNext($txt, $word, $current);
-    if ($position == -1) {
-        return (1, $txt);
+    my $position = findNext($txt, $word, $current); # check if word is in txt
+    if ($position == -1) { # word not in txt
+        return (1, $txt); #return error
     }
 
     #return substr($txt, $position, length($word)) . $replace . substr($txt, $position + length($word));
-    return (0, substr($txt, 0, $position) . $replace . substr($txt, $position + length($word)));
+    return (0, substr($txt, 0, $position) . $replace . substr($txt, $position + length($word))); #substitutes word and return error code 0 as no error occured
 }
 
 sub replaceAll {
     my $txt = $_[0];
     my $word = $_[1];
     my $replace = $_[2];
-    my $count = ($txt =~ s/$word/$replace/g);
+    my $count = ($txt =~ s/$word/$replace/g); # replace all occurences in $txt and return number of matches
     if($count == 0){
         $count = 1;
     }
     else{
         $count = 0;
     }
-    return ($count, $txt);
+    return ($count, $txt); # returns $count = 0 if a substitution has happened
 }
 
 sub textCount {
     my $txt = $_[0];
-    my $chars = length $txt;
+    my $chars = length $txt; # chars is simply the length of txt
 		my $wordCount = 0;
 		my $nw_chars = 0;
 		my $lines = 0;
 		
-		if ($chars == 0){
+		if ($chars == 0){ #no chars, so do nothing else
 		}
 		else{
-			my @words = split " ", $txt;
-			$wordCount = scalar(@words);
-			$nw_chars = sum(map({length($_)} @words));
-			$lines = scalar(split(/\n/, $txt."."));
+			my @words = split " ", $txt; # splits $txt on whitespace
+			$wordCount = scalar(@words); # number of elements is the number of words
+			$nw_chars = sum(map({length($_)} @words)); # number of non whitespace chars is the sum of individual lengths of words
+			$lines = scalar(split(/\n/, $txt.".")); # splits txt on newlines and counts the number of elements. the appended '.' is just so empty lines on the end of txt are still counted 
 		}
 
-    return ($chars, $wordCount, $nw_chars, $lines);
+    return ($chars, $wordCount, $nw_chars, $lines); # returns an array with all analysed info
 }
 
 sub capitalize {
     my $txt = $_[0];
-    my @phrases = split ( /([.?!])/, $txt);
+    my @phrases = split ( /([.?!])/, $txt); # splits into phrases and keeps separators in @phrases arrays
     foreach my $p (@phrases){
-        $p =~ s/\b(\w)/\U$1/;
+        $p =~ s/\b(\w)/\U$1/; # for each phrase, capitalize the first nonwhitespace char
     }
 
-    return join('', @phrases);
+    return join('', @phrases); # rejoin phrases
 }
 
 # Autoload methods go after =cut, and are processed by the autosplit program.
