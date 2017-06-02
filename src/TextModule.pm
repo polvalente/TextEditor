@@ -157,7 +157,7 @@ sub textCount {
 			my @words = split " ", $txt;
 			$wordCount = scalar(@words);
 			$nw_chars = sum(map({length($_)} @words));
-			$lines = scalar split "\n", $txt;
+			$lines = scalar(split(/\n/, $txt."."));
 		}
 
     return ($chars, $wordCount, $nw_chars, $lines);

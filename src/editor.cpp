@@ -412,14 +412,14 @@ void Editor::left(){ // andar para a esquerda
 	}
 }
 
-void Editor::right(){
+void Editor::right(){ // andar para a direita
 	msg = "";
 	if (x + 1 < COLS && x + 1 <= (int)buffer->lines->at(y).length()){
 		interface->moveTo(y, ++x);
 	}
 }
 
-void Editor::up(){
+void Editor::up(){ // andar para cima
 	msg = "";
 	if (y-1 >= 0){
 		y--;
@@ -430,7 +430,7 @@ void Editor::up(){
 	interface->moveTo(y, x);
 }
 
-void Editor::down(){
+void Editor::down(){ // andar para baixo
 	msg = "";
 	if(y+1 < (int)LINES-1 && y+1 < (int) buffer->lines->size()){
 		y++;
@@ -441,35 +441,36 @@ void Editor::down(){
 	interface->moveTo(y, x);
 }
 
-const vector<string>& Editor::getBuffer(){
+const vector<string>& Editor::getBuffer(){ // retornar referencia para o buffer a imprimir na tela
 	if (mode == 'h')
 		return helpText;
 	return *(buffer->lines);
 }
 
-const string& Editor::getStatus(){
+const string& Editor::getStatus(){ // retornar referencia para a barra de status
 	return status; 
 }
 
-void Editor::deleteLine(){
+void Editor::deleteLine(){ // apagar linha atual
 	buffer->removeLine(y);
 }
 
-void Editor::deleteLine(int i){
+void Editor::deleteLine(int i){ // apagar linha especifica
 	buffer->removeLine(i);
 }
 
-void Editor::save(){
-	if(filename == ""){
+void Editor::save(){ // salvar arquivo atual
+	if(filename == ""){ // se nao tiver nome de arquivo, mostra mensagem de erro
 		msg = "Escolha um nome de arquivo com ':w <nome>'";
 		return;
 	}
 
-	std::ofstream arquivo(filename.c_str());
-	if(arquivo.is_open()){
-		for(unsigned i=0; i < buffer->lines->size(); i++){
-			if (buffer->lines->at(i) != "")
-				arquivo << buffer->lines->at(i) << std::endl;
+	std::ofstream arquivo(filename.c_str()); // abrir arquivo para escrita
+	if(arquivo.is_open()){ // se abriu, editar
+		for(unsigned i=0; i < buffer->lines->size(); i++){ // imprimir cada linha do buffer
+				arquivo << buffer->lines->at(i);
+				if(i != buffer->lines->size()-1) // nao imprime endl se for a ultima linha
+					arquivo << std::endl;
 		}
 		msg = "Arquivo '"+filename+"' salvo!";
 	}
@@ -574,6 +575,8 @@ vector<int> Editor::convertIdxToRowCol(int idx, const string& txt){
 }
 
 string Editor::getBufferTxt(){
+	vector<string> &lines = *(buffer->lines);
+	return join(lines,"\n");
 	string txt = "";
 	for(size_t i = 0; i < buffer->lines->size(); i++){
 		txt += buffer->lines->at(i) + "\n";
@@ -646,35 +649,6 @@ bool Editor::findReplace(){
 		
 		return true;
 	}
-	/*else if (comando[0] == "s"){
-		//replace
-		string &new_word = comando[2];
-		if (comando.size() == 3 && comando[2] == "g"){
-			all = false;
-		}
-		int count = 0;
-		string tmp;
-
-		if (all){
-			//replace all
-			tmp = wrapper->replace(txt, word, new_word, count, -1);
-		}
-		else{
-			//replace next
-			tmp = wrapper->replace(txt, word, new_word, count, x);
-		}
-		vector<string> replaceResult = split(tmp);
-		if (comando[0] == "\%s"){
-			buffer->deleteContent();
-			for (size_t i = 0; i < replaceResult.size(); i++){
-				buffer->appendLine(replaceResult[i]);
-			}
-		}
-		else {
-		buffer->removeLine(y);
-		buffer->insertLine(replaceResult[0], y);
-		return true;
-	}*/
 	else if (comando[0] == "s" || comando[0] == "\%s"){
 		//replace
 		string &new_word = comando[2];
