@@ -97,6 +97,7 @@ void Editor::updateStatus(){
 	//Metodo para configuracao do status
 	switch(mode){
 		case 'n':
+			z_mode_output = "";
 			status = "Modo Normal";
 			break;
 		case 'i':
@@ -680,6 +681,7 @@ bool Editor::findReplace(){
 			string current_line = buffer->lines->at(index);
 			if (current_line.length() == 0)
 				continue;
+			count = 0;
 			tmp = wrapper->replace(current_line, word, new_word, count, pos);
 			if (count == 1)
 				continue;
